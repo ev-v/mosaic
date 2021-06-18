@@ -1,6 +1,8 @@
 import { FocusMonitor } from '@angular/cdk/a11y';
+import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import {
     AfterViewInit,
+    Attribute,
     Component,
     Directive,
     ElementRef,
@@ -107,13 +109,13 @@ export class McNavbarItem extends McNavbarMixinBase implements OnInit, OnDestroy
 @Directive({
     selector: 'mc-navbar-container',
     host: {
+        class: 'mc-navbar-container',
         '[class.mc-navbar-left]': 'this.position === "left"',
         '[class.mc-navbar-right]': 'this.position !== "left"'
     }
 })
 export class McNavbarContainer {
-    @Input()
-    position: McNavbarContainerPositionType = 'left';
+    @Input() position: McNavbarContainerPositionType = 'left';
 }
 
 class CollapsibleItem {
@@ -133,7 +135,6 @@ class CollapsibleItem {
         } else {
             this.element.classList.remove(COLLAPSED_CLASS);
         }
-
     }
 }
 
@@ -194,7 +195,10 @@ class CachedItemWidth {
 @Component({
     selector: 'mc-navbar',
     template: `
-        <nav class="mc-navbar">
+        <nav class="mc-navbar"
+             [class.mc-navbar_vertical]="vertical"
+             [class.mc-navbar_horizontal]="!vertical">
+
             <ng-content select="[mc-navbar-container], mc-navbar-container"></ng-content>
         </nav>
     `,
@@ -202,6 +206,8 @@ class CachedItemWidth {
     encapsulation: ViewEncapsulation.None
 })
 export class McNavbar implements AfterViewInit, OnDestroy {
+
+    readonly vertical: boolean = false;
 
     private readonly forceRecalculateItemsWidth: boolean = false;
     private readonly resizeDebounceInterval: number = 100;
@@ -215,7 +221,7 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     private totalItemsWidths: number;
 
     private get maxAllowedWidth(): number {
-        return this._elementRef.nativeElement.querySelector('nav').getBoundingClientRect().width;
+        return this.elementRef.nativeElement.querySelector('nav').getBoundingClientRect().width;
     }
 
     private get itemsWidths(): CachedItemWidth[] {
@@ -243,8 +249,11 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     private resizeSubscription: Subscription;
 
     constructor(
-        private _elementRef: ElementRef
+        private elementRef: ElementRef,
+        @Attribute('vertical') vertical: string
     ) {
+        this.vertical = coerceBooleanProperty(vertical);
+
         const resizeObserver = fromEvent(window, 'resize')
             .pipe(debounceTime(this.resizeDebounceInterval));
 
@@ -257,9 +266,7 @@ export class McNavbar implements AfterViewInit, OnDestroy {
         for (let i = this.itemsWidths.length - 1; i >= 0; i--) {
             const item = this.itemsWidths[i];
 
-            if (!item.canCollapse) {
-                continue;
-            }
+            if (!item.canCollapse) { continue; }
 
             item.processCollapsed(collapseDelta > 0);
             collapseDelta -= item.collapsedItemsWidth;
@@ -292,7 +299,7 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     private calculateAndCacheItemsWidth() {
         const allItemsSelector = this.secondLevelElements
             .map((e: string) => `${this.firstLevelElement}>${e}`);
-        const allItems: HTMLElement[] = Array.from(this._elementRef.nativeElement.querySelectorAll(allItemsSelector));
+        const allItems: HTMLElement[] = Array.from(this.elementRef.nativeElement.querySelectorAll(allItemsSelector));
 
         this._itemsWidths = allItems
             .map((el) => new CachedItemWidth(el, this.getOuterElementWidth(el), this.getItemsForCollapse(el)));
@@ -301,9 +308,7 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     private getItemsForCollapse(element: HTMLElement): CollapsibleItem[] {
         const icon = element.querySelector(`[mc-icon],mc-navbar-logo,[mc-navbar-logo]`);
 
-        if (!icon) {
-            return [];
-        }
+        if (!icon) { return []; }
 
         return Array.from(element.querySelectorAll('mc-navbar-title'))
             .map((el) => new CollapsibleItem(<HTMLElement> el, el.getBoundingClientRect().width));
