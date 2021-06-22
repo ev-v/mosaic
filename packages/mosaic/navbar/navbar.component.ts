@@ -9,6 +9,8 @@ import {
     Input,
     OnDestroy,
     OnInit,
+    QueryList,
+    ViewChildren,
     ViewEncapsulation
 } from '@angular/core';
 import { CanDisable, CanDisableCtor, HasTabIndexCtor, mixinDisabled, mixinTabIndex } from '@ptsecurity/mosaic/core';
@@ -20,6 +22,7 @@ const COLLAPSED_CLASS: string = 'mc-navbar-collapsed-title';
 
 export type McNavbarContainerPositionType = 'left' | 'right';
 
+
 @Directive({
     selector: 'mc-navbar-logo',
     host: {
@@ -28,13 +31,6 @@ export type McNavbarContainerPositionType = 'left' | 'right';
 })
 export class McNavbarLogo {}
 
-@Directive({
-    selector: 'mc-navbar-brand',
-    host: {
-        class: 'mc-navbar-brand'
-    }
-})
-export class McNavbarBrand {}
 
 @Directive({
     selector: 'mc-navbar-title',
@@ -44,6 +40,20 @@ export class McNavbarBrand {}
 })
 export class McNavbarTitle {}
 
+
+@Directive({
+    selector: 'mc-navbar-brand',
+    host: {
+        class: 'mc-navbar-brand',
+        '[class.mc-navbar-brand_vertical]': 'mcNavbar.vertical',
+        '[class.mc-navbar-brand_closed]': 'mcNavbar.closed'
+    }
+})
+export class McNavbarBrand {
+    constructor(public mcNavbar: McNavbar) {}
+}
+
+
 export class McNavbarItemBase {
     constructor(public elementRef: ElementRef) {}
 }
@@ -52,6 +62,7 @@ export class McNavbarItemBase {
 export const McNavbarMixinBase:
     HasTabIndexCtor & CanDisableCtor & typeof McNavbarItemBase = mixinTabIndex(mixinDisabled(McNavbarItemBase));
 
+
 @Component({
     selector: 'mc-navbar-item',
     template: `<ng-content></ng-content>`,
@@ -59,6 +70,8 @@ export const McNavbarMixinBase:
     inputs: ['disabled', 'tabIndex'],
     host: {
         class: 'mc-navbar-item',
+        '[class.mc-navbar-item_vertical]': 'mcNavbar.vertical',
+        '[class.mc-navbar-item_closed]': 'mcNavbar.closed',
         '[attr.tabindex]': 'tabIndex',
         '[attr.disabled]': 'disabled || null'
     }
@@ -71,7 +84,8 @@ export class McNavbarItem extends McNavbarMixinBase implements OnInit, OnDestroy
 
     constructor(
         public  elementRef: ElementRef,
-        private _focusMonitor: FocusMonitor
+        private _focusMonitor: FocusMonitor,
+        public mcNavbar: McNavbar
     ) {
         super(elementRef);
     }
@@ -106,16 +120,19 @@ export class McNavbarItem extends McNavbarMixinBase implements OnInit, OnDestroy
     }
 }
 
+
 @Directive({
     selector: 'mc-navbar-container',
     host: {
         class: 'mc-navbar-container',
         '[class.mc-navbar-left]': 'this.position === "left"',
-        '[class.mc-navbar-right]': 'this.position !== "left"'
+        '[class.mc-navbar-right]': 'this.position == "right"',
+        '[class.mc-navbar_top]': 'this.position == "top"',
+        '[class.mc-navbar_bottom]': 'this.position == "bottom"'
     }
 })
 export class McNavbarContainer {
-    @Input() position: McNavbarContainerPositionType = 'left';
+    @Input() position: McNavbarContainerPositionType;
 }
 
 class CollapsibleItem {
@@ -197,9 +214,12 @@ class CachedItemWidth {
     template: `
         <nav class="mc-navbar"
              [class.mc-navbar_vertical]="vertical"
-             [class.mc-navbar_horizontal]="!vertical">
+             [class.mc-navbar_horizontal]="!vertical"
+             [class.mc-navbar_closed]="closed"
+             [class.mc-navbar_opened]="!closed">
 
             <ng-content select="[mc-navbar-container], mc-navbar-container"></ng-content>
+            <ng-content select="[mc-navbar-toggle], mc-navbar-toggle"></ng-content>
         </nav>
     `,
     styleUrls: ['./navbar.scss'],
@@ -208,6 +228,9 @@ class CachedItemWidth {
 export class McNavbar implements AfterViewInit, OnDestroy {
 
     readonly vertical: boolean = false;
+    closed: boolean = true;
+
+    @ViewChildren(McNavbarItem) navbarItems: QueryList<McNavbarItem>;
 
     private readonly forceRecalculateItemsWidth: boolean = false;
     private readonly resizeDebounceInterval: number = 100;
@@ -283,6 +306,10 @@ export class McNavbar implements AfterViewInit, OnDestroy {
         this.resizeSubscription.unsubscribe();
     }
 
+    toggle(): void {
+        this.closed = !this.closed;
+    }
+
     private calculateAndCacheTotalItemsWidth() {
         this.totalItemsWidths = this.itemsWidths
             .reduce((acc, item) => acc + item.width, 0);
@@ -299,6 +326,7 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     private calculateAndCacheItemsWidth() {
         const allItemsSelector = this.secondLevelElements
             .map((e: string) => `${this.firstLevelElement}>${e}`);
+
         const allItems: HTMLElement[] = Array.from(this.elementRef.nativeElement.querySelectorAll(allItemsSelector));
 
         this._itemsWidths = allItems
@@ -312,5 +340,27 @@ export class McNavbar implements AfterViewInit, OnDestroy {
 
         return Array.from(element.querySelectorAll('mc-navbar-title'))
             .map((el) => new CollapsibleItem(<HTMLElement> el, el.getBoundingClientRect().width));
+    }
+}
+
+
+@Component({
+    selector: 'mc-navbar-toggle',
+    template: `
+        <i class="mc mc-angle-right-M_16"></i>
+        <ng-content></ng-content>
+    `,
+    host: {
+        class: 'mc-navbar-toggle mc-navbar-item',
+        '(click)': 'clickHandler()'
+    },
+    styleUrls: ['./navbar.scss'],
+    encapsulation: ViewEncapsulation.None
+})
+export class McNavbarToggle {
+    constructor(private mcNavbar: McNavbar) {}
+
+    clickHandler() {
+        this.mcNavbar.toggle();
     }
 }

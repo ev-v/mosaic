@@ -1,16 +1,6 @@
 @import '../design-tokens/tokens';
 
 
-%mc-navbar-container-base {
-    display: flex;
-    flex-shrink: 0;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-
-    height: 100%;
-}
-
 %mc-navbar-item-base {
     height: 100%;
     position: relative;
@@ -18,20 +8,4 @@
     align-items: center;
     padding-left: var(--mc-navbar-item-size-padding, $navbar-item-size-padding);
     padding-right: var(--mc-navbar-item-size-padding, $navbar-item-size-padding);
-}
-
-%mc-navbar-brand-base {
-    @extend %mc-navbar-item-base;
-    padding-left: 0;
-    padding-right: var(--mc-navbar-brand-size-padding, $navbar-brand-size-padding);
-    margin-right: var(--mc-navbar-brand-size-margin-right, $navbar-brand-size-margin-right);
-
-    .mc-navbar-title {
-        padding-left: var(--mc-navbar-brand-size-padding, $navbar-brand-size-padding);
-        padding-right: 0;
-    }
-}
-
-%mc-navbar-title-base {
-    white-space: nowrap;
 }

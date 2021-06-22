@@ -2,6 +2,7 @@ import { A11yModule } from '@angular/cdk/a11y';
 import { PlatformModule } from '@angular/cdk/platform';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { McIconModule } from '@ptsecurity/mosaic/icon';
 
 import {
     McNavbar,
@@ -9,7 +10,8 @@ import {
     McNavbarItem,
     McNavbarTitle,
     McNavbarBrand,
-    McNavbarLogo
+    McNavbarLogo,
+    McNavbarToggle
 } from './navbar.component';
 
 
@@ -17,7 +19,8 @@ import {
     imports: [
         CommonModule,
         A11yModule,
-        PlatformModule
+        PlatformModule,
+        McIconModule
     ],
     exports: [
         McNavbar,
@@ -25,7 +28,8 @@ import {
         McNavbarTitle,
         McNavbarItem,
         McNavbarBrand,
-        McNavbarLogo
+        McNavbarLogo,
+        McNavbarToggle
     ],
     declarations: [
         McNavbar,
@@ -33,7 +37,8 @@ import {
         McNavbarTitle,
         McNavbarItem,
         McNavbarBrand,
-        McNavbarLogo
+        McNavbarLogo,
+        McNavbarToggle
     ]
 })
 export class McNavbarModule {}
