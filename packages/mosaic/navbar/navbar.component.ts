@@ -4,6 +4,7 @@ import {
     AfterViewInit,
     Attribute,
     Component,
+    ContentChild,
     Directive,
     ElementRef,
     Input,
@@ -14,6 +15,7 @@ import {
     ViewEncapsulation
 } from '@angular/core';
 import { CanDisable, CanDisableCtor, HasTabIndexCtor, mixinDisabled, mixinTabIndex } from '@ptsecurity/mosaic/core';
+import { McIcon } from '@ptsecurity/mosaic/icon';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
@@ -39,6 +41,15 @@ export class McNavbarLogo {}
     }
 })
 export class McNavbarTitle {}
+
+
+@Directive({
+    selector: '[mc-navbar-toggle-text]',
+    host: {
+        class: 'mc-navbar-toggle-text'
+    }
+})
+export class McNavbarToggleText {}
 
 
 @Directive({
@@ -83,40 +94,19 @@ export class McNavbarItem extends McNavbarMixinBase implements OnInit, OnDestroy
     }
 
     constructor(
-        public  elementRef: ElementRef,
-        private _focusMonitor: FocusMonitor,
+        public elementRef: ElementRef,
+        private focusMonitor: FocusMonitor,
         public mcNavbar: McNavbar
     ) {
         super(elementRef);
     }
 
     ngOnInit() {
-        this.denyClickIfDisabled();
-
-        this._focusMonitor.monitor(this.elementRef.nativeElement, true);
+        this.focusMonitor.monitor(this.elementRef.nativeElement, true);
     }
 
     ngOnDestroy() {
-        this._focusMonitor.stopMonitoring(this.elementRef.nativeElement);
-    }
-
-    // This method is required due to angular 2 issue https://github.com/angular/angular/issues/11200
-    private denyClickIfDisabled() {
-        const events: Event[] = this.elementRef.nativeElement.eventListeners('click');
-
-        events.forEach((event) => this.elementRef.nativeElement.removeEventListener('click', event));
-
-        this.elementRef.nativeElement.addEventListener(
-            'click',
-            (event: MouseEvent) => {
-                if (this.elementRef.nativeElement.hasAttribute('disabled')) {
-                    event.stopImmediatePropagation();
-                }
-            },
-            true
-        );
-
-        events.forEach((event) => this.elementRef.nativeElement.addEventListener('click', event));
+        this.focusMonitor.stopMonitoring(this.elementRef.nativeElement);
     }
 }
 
@@ -226,9 +216,9 @@ class CachedItemWidth {
     encapsulation: ViewEncapsulation.None
 })
 export class McNavbar implements AfterViewInit, OnDestroy {
-
     readonly vertical: boolean = false;
-    closed: boolean = true;
+
+    @Input() closed: boolean = false;
 
     @ViewChildren(McNavbarItem) navbarItems: QueryList<McNavbarItem>;
 
@@ -277,13 +267,24 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     ) {
         this.vertical = coerceBooleanProperty(vertical);
 
-        const resizeObserver = fromEvent(window, 'resize')
-            .pipe(debounceTime(this.resizeDebounceInterval));
+        if (!this.vertical) {
+            this.subscribeOnResizeEvents();
+        }
+    }
 
-        this.resizeSubscription = resizeObserver.subscribe(this.updateCollapsed.bind(this));
+    ngAfterViewInit(): void {
+        // Note: this wait is required for loading and rendering fonts for icons;
+        // unfortunately we cannot control font rendering
+        setTimeout(() => this.updateCollapsed(), 0);
+    }
+
+    ngOnDestroy() {
+        this.resizeSubscription?.unsubscribe();
     }
 
     updateCollapsed(): void {
+        if (this.vertical) { return; }
+
         let collapseDelta = this.totalItemsWidth - this.maxAllowedWidth;
 
         for (let i = this.itemsWidths.length - 1; i >= 0; i--) {
@@ -296,18 +297,14 @@ export class McNavbar implements AfterViewInit, OnDestroy {
         }
     }
 
-    ngAfterViewInit(): void {
-        // Note: this wait is required for loading and rendering fonts for icons;
-        // unfortunately we cannot control font rendering
-        setTimeout(() => this.updateCollapsed(), 0);
-    }
-
-    ngOnDestroy() {
-        this.resizeSubscription.unsubscribe();
-    }
-
     toggle(): void {
         this.closed = !this.closed;
+    }
+
+    private subscribeOnResizeEvents() {
+        this.resizeSubscription = fromEvent(window, 'resize')
+            .pipe(debounceTime(this.resizeDebounceInterval))
+            .subscribe(this.updateCollapsed.bind(this));
     }
 
     private calculateAndCacheTotalItemsWidth() {
@@ -347,8 +344,14 @@ export class McNavbar implements AfterViewInit, OnDestroy {
 @Component({
     selector: 'mc-navbar-toggle',
     template: `
-        <i class="mc mc-angle-right-M_16"></i>
-        <ng-content></ng-content>
+        <i mc-icon
+           [class.mc-angle-left-M_16]="!mcNavbar.closed"
+           [class.mc-angle-right-M_16]="mcNavbar.closed"
+           *ngIf="!customIcon">
+        </i>
+
+        <ng-content select="[mc-icon]"></ng-content>
+        <ng-content select="[mc-navbar-toggle-text]" *ngIf="!mcNavbar.closed"></ng-content>
     `,
     host: {
         class: 'mc-navbar-toggle mc-navbar-item',
@@ -358,6 +361,8 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     encapsulation: ViewEncapsulation.None
 })
 export class McNavbarToggle {
+    @ContentChild(McIcon) customIcon: McIcon;
+
     constructor(private mcNavbar: McNavbar) {}
 
     clickHandler() {

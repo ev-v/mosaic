@@ -16,7 +16,7 @@
 
 <mc-navbar vertical>
     <mc-navbar-container>
-        <mc-navbar-item (click)="onItemClick($event)">
+        <mc-navbar-item [mcDropdownTriggerFor]="appDropdown">
             <i mc-icon="mc-hamburger_16"></i>
         </mc-navbar-item>
         <mc-navbar-brand>
@@ -42,13 +42,13 @@
             <mc-navbar-title>Disabled in-progress</mc-navbar-title>
         </mc-navbar-item>
         <mc-navbar-item disabled (click)="onItemClick($event)">
-            <mc-navbar-title>Right Icon</mc-navbar-title>
             <i mc-icon="mc-search_16"></i>
+            <mc-navbar-title>Right Icon</mc-navbar-title>
         </mc-navbar-item>
 
-        <mc-navbar-item [mcDropdownTriggerFor]="appDropdown">
-            <mc-navbar-title>mc-dropdown</mc-navbar-title>
+        <mc-navbar-item>
             <i mc-icon="mc-angle-down-L_16"></i>
+            <mc-navbar-title>mc-dropdown</mc-navbar-title>
         </mc-navbar-item>
 
         <mc-navbar-item (click)="onItemClick($event)">
@@ -58,19 +58,21 @@
 
     <mc-navbar-container>
         <mc-navbar-item (click)="onItemClick($event)" [collapsedTitle]="'custom title'">
-            <mc-navbar-title>Right Icon</mc-navbar-title>
             <i mc-icon="mc-search_16"></i>
+            <mc-navbar-title>Right Icon</mc-navbar-title>
         </mc-navbar-item>
 
         <mc-navbar-item class="cdk-focused" (click)="onItemClick($event)">
-            <mc-navbar-title>focused</mc-navbar-title>
             <i mc-icon="mc-angle-down-M_16"></i>
+            <mc-navbar-title>focused</mc-navbar-title>
         </mc-navbar-item>
 
         <mc-navbar-item (click)="onItemClick($event)">
             <i mc-icon="mc-gear_16"></i>
         </mc-navbar-item>
-        <mc-navbar-toggle></mc-navbar-toggle>
+        <mc-navbar-toggle>
+            <div mc-navbar-toggle-text>Свернуть меню</div>
+        </mc-navbar-toggle>
     </mc-navbar-container>
 </mc-navbar>
 

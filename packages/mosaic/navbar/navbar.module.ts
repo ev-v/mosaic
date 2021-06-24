@@ -11,7 +11,7 @@ import {
     McNavbarTitle,
     McNavbarBrand,
     McNavbarLogo,
-    McNavbarToggle
+    McNavbarToggle, McNavbarToggleText
 } from './navbar.component';
 
 
@@ -29,7 +29,8 @@ import {
         McNavbarItem,
         McNavbarBrand,
         McNavbarLogo,
-        McNavbarToggle
+        McNavbarToggle,
+        McNavbarToggleText
     ],
     declarations: [
         McNavbar,
@@ -38,7 +39,8 @@ import {
         McNavbarItem,
         McNavbarBrand,
         McNavbarLogo,
-        McNavbarToggle
+        McNavbarToggle,
+        McNavbarToggleText
     ]
 })
 export class McNavbarModule {}
