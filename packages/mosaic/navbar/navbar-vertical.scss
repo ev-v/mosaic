@@ -1,0 +1,144 @@
+@import 'navbar-base';
+@import 'navbar-theme';
+
+
+.mc-navbar-vertical {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    height: auto;
+
+    & .mc-navbar-container {
+        position: relative;
+        flex-direction: column;
+        align-items: unset;
+    }
+
+    & .mc-navbar-item,
+    & .mc-navbar-brand {
+        height: 48px;
+
+        & .mc-navbar-title {
+            padding-left: 10px;
+        }
+    }
+
+    &.mc-navbar_closed {
+        width: 48px;
+    }
+
+    &.mc-navbar_opened {
+        width: 240px;
+
+        & .mc-navbar-container:first-child .mc-navbar-item_vertical:first-child {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        & .mc-navbar-brand_vertical {
+            flex-direction: column;
+            align-items: unset;
+
+            height: unset;
+
+            padding-left: 16px;
+
+            & .mc-navbar-logo {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+
+                width: 48px;
+                height: 48px;
+            }
+
+            & .mc-navbar-title {
+                height: 48px;
+                padding-left: 0;
+            }
+        }
+    }
+}
+
+.mc-navbar-container.mc-navbar-left,
+.mc-navbar-container.mc-navbar-right {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    height: 100%;
+}
+
+.mc-navbar-toggle {
+    height: 48px;
+}
+
+.mc-navbar-item,
+.mc-navbar-title,
+mc-navbar-item:first-child {
+    @extend %mc-navbar-item-base;
+}
+
+.mc-navbar-title {
+    white-space: nowrap;
+}
+
+.mc-navbar-brand {
+    @extend %mc-navbar-item-base;
+
+    padding-left: 0;
+    padding-right: var(--mc-navbar-brand-size-padding, $navbar-brand-size-padding);
+    margin-right: var(--mc-navbar-brand-size-margin-right, $navbar-brand-size-margin-right);
+
+    .mc-navbar-title {
+        padding-left: var(--mc-navbar-brand-size-padding, $navbar-brand-size-padding);
+        padding-right: 0;
+    }
+
+    &.mc-navbar-brand_closed {
+        align-items: center;
+        justify-content: center;
+
+        padding: 0;
+        margin: 0;
+
+        & .mc-navbar-title {
+            display: none;
+        }
+    }
+}
+
+.mc-navbar-item.mc-navbar-item_closed .mc-navbar-title {
+    display: none;
+}
+
+.mc-navbar-item:not([disabled]) {
+    cursor: pointer;
+}
+
+.mc-navbar-item .mc-navbar-title {
+    padding: 0;
+}
+
+mc-navbar-item.mc-progress:not([disabled]) {
+    cursor: pointer;
+}
+
+mc-navbar-item[disabled] .mc-navbar-item,
+.mc-navbar-item[disabled] {
+    /*It is controversially. Works fine but cannot be tested*/
+    /*pointer-events: none;*/
+    cursor: default;
+}
+
+mc-navbar-title.mc-navbar-collapsed-title {
+    display: none;
+}
+
+.mc-navbar-toggle-text {
+    padding-left: 10px;
+}

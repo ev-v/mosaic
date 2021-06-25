@@ -5,7 +5,8 @@
 @mixin mc-navbar-theme($theme) {
     $navbar: map-get(map-get($theme, components), navbar);
 
-    .mc-navbar {
+    .mc-navbar,
+    .mc-navbar-vertical {
         background-color: map-get($navbar, background);
 
         .mc-navbar-title,

@@ -1,114 +1,21 @@
-import { FocusMonitor } from '@angular/cdk/a11y';
-import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import {
     AfterViewInit,
-    Attribute,
     Component,
-    ContentChild,
     Directive,
     ElementRef,
     Input,
     OnDestroy,
-    OnInit,
     QueryList,
     ViewChildren,
     ViewEncapsulation
 } from '@angular/core';
-import { CanDisable, CanDisableCtor, HasTabIndexCtor, mixinDisabled, mixinTabIndex } from '@ptsecurity/mosaic/core';
-import { McIcon } from '@ptsecurity/mosaic/icon';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
+import { CachedItemWidth, CollapsibleItem, McNavbarItem } from './navbar-item.component';
 
-const COLLAPSED_CLASS: string = 'mc-navbar-collapsed-title';
 
 export type McNavbarContainerPositionType = 'left' | 'right';
-
-
-@Directive({
-    selector: 'mc-navbar-logo',
-    host: {
-        class: 'mc-navbar-logo'
-    }
-})
-export class McNavbarLogo {}
-
-
-@Directive({
-    selector: 'mc-navbar-title',
-    host: {
-        class: 'mc-navbar-title'
-    }
-})
-export class McNavbarTitle {}
-
-
-@Directive({
-    selector: '[mc-navbar-toggle-text]',
-    host: {
-        class: 'mc-navbar-toggle-text'
-    }
-})
-export class McNavbarToggleText {}
-
-
-@Directive({
-    selector: 'mc-navbar-brand',
-    host: {
-        class: 'mc-navbar-brand',
-        '[class.mc-navbar-brand_vertical]': 'mcNavbar.vertical',
-        '[class.mc-navbar-brand_closed]': 'mcNavbar.closed'
-    }
-})
-export class McNavbarBrand {
-    constructor(public mcNavbar: McNavbar) {}
-}
-
-
-export class McNavbarItemBase {
-    constructor(public elementRef: ElementRef) {}
-}
-
-// tslint:disable-next-line:naming-convention
-export const McNavbarMixinBase:
-    HasTabIndexCtor & CanDisableCtor & typeof McNavbarItemBase = mixinTabIndex(mixinDisabled(McNavbarItemBase));
-
-
-@Component({
-    selector: 'mc-navbar-item',
-    template: `<ng-content></ng-content>`,
-    encapsulation: ViewEncapsulation.None,
-    inputs: ['disabled', 'tabIndex'],
-    host: {
-        class: 'mc-navbar-item',
-        '[class.mc-navbar-item_vertical]': 'mcNavbar.vertical',
-        '[class.mc-navbar-item_closed]': 'mcNavbar.closed',
-        '[attr.tabindex]': 'tabIndex',
-        '[attr.disabled]': 'disabled || null'
-    }
-})
-export class McNavbarItem extends McNavbarMixinBase implements OnInit, OnDestroy, CanDisable {
-    @Input()
-    set collapsedTitle(value: string) {
-        this.elementRef.nativeElement.setAttribute('computedTitle', encodeURI(value));
-    }
-
-    constructor(
-        public elementRef: ElementRef,
-        private focusMonitor: FocusMonitor,
-        public mcNavbar: McNavbar
-    ) {
-        super(elementRef);
-    }
-
-    ngOnInit() {
-        this.focusMonitor.monitor(this.elementRef.nativeElement, true);
-    }
-
-    ngOnDestroy() {
-        this.focusMonitor.stopMonitoring(this.elementRef.nativeElement);
-    }
-}
 
 
 @Directive({
@@ -125,101 +32,17 @@ export class McNavbarContainer {
     @Input() position: McNavbarContainerPositionType;
 }
 
-class CollapsibleItem {
-    private collapsed: boolean = false;
-
-    constructor(public element: HTMLElement, public width: number) {}
-
-    processCollapsed(collapsed: boolean) {
-        this.collapsed = collapsed;
-
-        this.updateCollapsedClass();
-    }
-
-    private updateCollapsedClass() {
-        if (this.collapsed) {
-            this.element.classList.add(COLLAPSED_CLASS);
-        } else {
-            this.element.classList.remove(COLLAPSED_CLASS);
-        }
-    }
-}
-
-class CachedItemWidth {
-    get canCollapse(): boolean {
-        return this.itemsForCollapse.length > 0;
-    }
-
-    get collapsedItemsWidth(): number {
-        if (this._collapsedItemsWidth !== undefined) {
-            return this._collapsedItemsWidth;
-        }
-
-        this.calculateAndCacheCollapsedItemsWidth();
-
-        return this._collapsedItemsWidth;
-    }
-
-    private _collapsedItemsWidth: number;
-
-    constructor(
-        public element: HTMLElement,
-        public width: number,
-        public itemsForCollapse: CollapsibleItem[] = []
-    ) {}
-
-    processCollapsed(collapsed: boolean) {
-        if (this.itemsForCollapse.length > 0) {
-            this.updateTitle(collapsed);
-        }
-
-        this.itemsForCollapse.forEach((item) => item.processCollapsed(collapsed));
-    }
-
-    private calculateAndCacheCollapsedItemsWidth() {
-        this._collapsedItemsWidth = this.itemsForCollapse
-            .reduce((acc, item) => acc + item.width, 0);
-    }
-
-    private getTitle(): string {
-        const computedTitle = this.element.getAttribute('computedTitle');
-
-        return computedTitle
-            ? decodeURI(computedTitle)
-            : (this.itemsForCollapse.length > 0 ? this.itemsForCollapse[0].element.innerText : '');
-    }
-
-    private updateTitle(collapsed: boolean) {
-        if (collapsed) {
-            this.element.setAttribute('title', this.getTitle());
-        } else {
-            this.element.removeAttribute('title');
-        }
-    }
-}
-
-
 @Component({
     selector: 'mc-navbar',
     template: `
-        <nav class="mc-navbar"
-             [class.mc-navbar_vertical]="vertical"
-             [class.mc-navbar_horizontal]="!vertical"
-             [class.mc-navbar_closed]="closed"
-             [class.mc-navbar_opened]="!closed">
-
+        <nav class="mc-navbar">
             <ng-content select="[mc-navbar-container], mc-navbar-container"></ng-content>
-            <ng-content select="[mc-navbar-toggle], mc-navbar-toggle"></ng-content>
         </nav>
     `,
     styleUrls: ['./navbar.scss'],
     encapsulation: ViewEncapsulation.None
 })
 export class McNavbar implements AfterViewInit, OnDestroy {
-    readonly vertical: boolean = false;
-
-    @Input() closed: boolean = false;
-
     @ViewChildren(McNavbarItem) navbarItems: QueryList<McNavbarItem>;
 
     private readonly forceRecalculateItemsWidth: boolean = false;
@@ -261,15 +84,8 @@ export class McNavbar implements AfterViewInit, OnDestroy {
 
     private resizeSubscription: Subscription;
 
-    constructor(
-        private elementRef: ElementRef,
-        @Attribute('vertical') vertical: string
-    ) {
-        this.vertical = coerceBooleanProperty(vertical);
-
-        if (!this.vertical) {
-            this.subscribeOnResizeEvents();
-        }
+    constructor(private elementRef: ElementRef,) {
+        this.subscribeOnResizeEvents();
     }
 
     ngAfterViewInit(): void {
@@ -283,8 +99,6 @@ export class McNavbar implements AfterViewInit, OnDestroy {
     }
 
     updateCollapsed(): void {
-        if (this.vertical) { return; }
-
         let collapseDelta = this.totalItemsWidth - this.maxAllowedWidth;
 
         for (let i = this.itemsWidths.length - 1; i >= 0; i--) {
@@ -295,10 +109,6 @@ export class McNavbar implements AfterViewInit, OnDestroy {
             item.processCollapsed(collapseDelta > 0);
             collapseDelta -= item.collapsedItemsWidth;
         }
-    }
-
-    toggle(): void {
-        this.closed = !this.closed;
     }
 
     private subscribeOnResizeEvents() {
@@ -337,35 +147,5 @@ export class McNavbar implements AfterViewInit, OnDestroy {
 
         return Array.from(element.querySelectorAll('mc-navbar-title'))
             .map((el) => new CollapsibleItem(<HTMLElement> el, el.getBoundingClientRect().width));
-    }
-}
-
-
-@Component({
-    selector: 'mc-navbar-toggle',
-    template: `
-        <i mc-icon
-           [class.mc-angle-left-M_16]="!mcNavbar.closed"
-           [class.mc-angle-right-M_16]="mcNavbar.closed"
-           *ngIf="!customIcon">
-        </i>
-
-        <ng-content select="[mc-icon]"></ng-content>
-        <ng-content select="[mc-navbar-toggle-text]" *ngIf="!mcNavbar.closed"></ng-content>
-    `,
-    host: {
-        class: 'mc-navbar-toggle mc-navbar-item',
-        '(click)': 'clickHandler()'
-    },
-    styleUrls: ['./navbar.scss'],
-    encapsulation: ViewEncapsulation.None
-})
-export class McNavbarToggle {
-    @ContentChild(McIcon) customIcon: McIcon;
-
-    constructor(private mcNavbar: McNavbar) {}
-
-    clickHandler() {
-        this.mcNavbar.toggle();
     }
 }
