@@ -44,14 +44,12 @@ export class McNavbarVertical {
            [class.mc-angle-right-M_16]="mcNavbar.closed"
            *ngIf="!customIcon">
         </i>
-        <ng-content></ng-content>
 
         <ng-content select="[mc-icon]"></ng-content>
-        <ng-content select="[mc-navbar-title]" *ngIf="!mcNavbar.closed"></ng-content>
+        <ng-content select="mc-navbar-title" *ngIf="!mcNavbar.closed"></ng-content>
     `,
     host: {
-        class: 'mc-navbar-item mc-navbar-toggle',
-        '(click)': 'clickHandler()'
+        class: 'mc-navbar-item mc-navbar-toggle'
     },
     styleUrls: ['./navbar.scss'],
     encapsulation: ViewEncapsulation.None
@@ -59,9 +57,5 @@ export class McNavbarVertical {
 export class McNavbarToggle {
     @ContentChild(McIcon) customIcon: McIcon;
 
-    constructor(private mcNavbar: McNavbarVertical) {}
-
-    clickHandler() {
-        this.mcNavbar.toggle();
-    }
+    constructor(public mcNavbar: McNavbarVertical) {}
 }

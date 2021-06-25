@@ -1,5 +1,5 @@
-@import 'navbar-base';
 @import 'navbar-theme';
+
 
 mc-navbar {
     display: flex;
@@ -26,6 +26,13 @@ mc-navbar {
     mc-navbar-title:not(.mc-navbar-collapsed-title) + [mc-icon] {
         margin-left: var(--mc-navbar-size-icon-margin-left, $navbar-size-icon-margin);
     }
+
+    & .mc-navbar-divider {
+        width: 1px;
+        height: 28px;
+
+        margin: 8px;
+    }
 }
 
 .mc-navbar-container.mc-navbar-left,
@@ -37,54 +44,4 @@ mc-navbar {
     align-items: center;
 
     height: 100%;
-}
-
-.mc-navbar-item,
-.mc-navbar-title,
-mc-navbar-item:first-child {
-    @extend %mc-navbar-item-base;
-}
-
-.mc-navbar-title {
-    white-space: nowrap;
-}
-
-.mc-navbar-brand {
-    @extend %mc-navbar-item-base;
-
-    padding-left: 0;
-    padding-right: var(--mc-navbar-brand-size-padding, $navbar-brand-size-padding);
-    margin-right: var(--mc-navbar-brand-size-margin-right, $navbar-brand-size-margin-right);
-
-    .mc-navbar-title {
-        padding-left: var(--mc-navbar-brand-size-padding, $navbar-brand-size-padding);
-        padding-right: 0;
-    }
-}
-
-.mc-navbar-item:not([disabled]) {
-    cursor: pointer;
-}
-
-.mc-navbar-item .mc-navbar-title {
-    padding: 0;
-}
-
-mc-navbar-item.mc-progress:not([disabled]) {
-    cursor: pointer;
-}
-
-mc-navbar-item[disabled] .mc-navbar-item,
-.mc-navbar-item[disabled] {
-    /*It is controversially. Works fine but cannot be tested*/
-    /*pointer-events: none;*/
-    cursor: default;
-}
-
-mc-navbar-title.mc-navbar-collapsed-title {
-    display: none;
-}
-
-.mc-navbar-toggle-text {
-    padding-left: 10px;
 }

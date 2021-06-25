@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { McIconModule } from '@ptsecurity/mosaic/icon';
 
-import { McNavbarBrand, McNavbarItem, McNavbarLogo, McNavbarTitle } from './navbar-item.component';
+import { McNavbarBrand, McNavbarDivider, McNavbarItem, McNavbarLogo, McNavbarTitle } from './navbar-item.component';
 import { McNavbarToggle, McNavbarVertical } from './navbar-vertical.component';
 import { McNavbar, McNavbarContainer } from './navbar.component';
 
@@ -24,7 +24,8 @@ import { McNavbar, McNavbarContainer } from './navbar.component';
         McNavbarBrand,
         McNavbarLogo,
         McNavbarToggle,
-        McNavbarVertical
+        McNavbarVertical,
+        McNavbarDivider
     ],
     declarations: [
         McNavbar,
@@ -34,7 +35,8 @@ import { McNavbar, McNavbarContainer } from './navbar.component';
         McNavbarBrand,
         McNavbarLogo,
         McNavbarToggle,
-        McNavbarVertical
+        McNavbarVertical,
+        McNavbarDivider
     ]
 })
 export class McNavbarModule {}

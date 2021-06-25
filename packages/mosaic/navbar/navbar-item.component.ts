@@ -1,6 +1,7 @@
 import { FocusMonitor } from '@angular/cdk/a11y';
 import {
     Component,
+    ContentChild,
     Directive,
     ElementRef,
     Input,
@@ -8,6 +9,7 @@ import {
     OnInit,
     ViewEncapsulation
 } from '@angular/core';
+import { McButton } from '@ptsecurity/mosaic/button';
 import { CanDisable, CanDisableCtor, HasTabIndexCtor, mixinDisabled, mixinTabIndex } from '@ptsecurity/mosaic/core';
 
 
@@ -40,6 +42,15 @@ export class McNavbarTitle {}
 export class McNavbarBrand {}
 
 
+@Directive({
+    selector: 'mc-navbar-divider',
+    host: {
+        class: 'mc-navbar-divider'
+    }
+})
+export class McNavbarDivider {}
+
+
 export class McNavbarItemBase {
     constructor(public elementRef: ElementRef) {}
 }
@@ -52,19 +63,23 @@ export const McNavbarMixinBase:
 @Component({
     selector: 'mc-navbar-item',
     template: `<ng-content></ng-content>`,
-    encapsulation: ViewEncapsulation.None,
-    inputs: ['disabled', 'tabIndex'],
+    styleUrls: ['./navbar-item.scss'],
     host: {
         class: 'mc-navbar-item',
         '[class.mc-navbar-item_vertical]': 'vertical',
         '[class.mc-navbar-item_closed]': 'closed',
+        '[class.mc-navbar-item_button]': 'button',
         '[attr.tabindex]': 'tabIndex',
         '[attr.disabled]': 'disabled || null'
-    }
+    },
+    inputs: ['disabled', 'tabIndex'],
+    encapsulation: ViewEncapsulation.None
 })
 export class McNavbarItem extends McNavbarMixinBase implements OnInit, OnDestroy, CanDisable {
     vertical: boolean;
     closed: boolean;
+
+    @ContentChild(McButton) button: McButton;
 
     @Input()
     set collapsedTitle(value: string) {
